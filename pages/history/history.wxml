@@ -1,0 +1,5 @@
+<view class="container">
+  <view class="textContainer">
+    <text class="textStyle">玩家记录</text>
+  </view>
+</view>
