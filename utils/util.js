@@ -1,5 +1,5 @@
 
-var arr = ["0", "0", "2", "0", "2", "0", "0", "6", "0", "4", "0", "8","0", "0", "2", "0", "2", "0", "0", "2", "0", "0", "0", "4"];
+var arr = ["0", "0", "2", "0", "2", "0", "0", "6", "0", "4", "0", "8", "0", "0", "2", "0", "2", "0", "0", "2", "0", "0", "0", "4"];
 
 /**
  * get formatTime
@@ -27,18 +27,18 @@ function formatNumber(num) {
  * 获得滑动方向
  */
 function getDirection(startX, startY, endX, endY) {
-    var xRes = startX - endX,
+  var xRes = startX - endX,
     xResAbs = Math.abs(startX - endX),
     yRes = startY - endY,
     yResAbs = Math.abs(startY - endY),
     direction = "";
 
-    if (xResAbs >= yResAbs && xResAbs > 25) {
-        direction = (xRes > 0) ? "Left" : "Right";
-    } else if (yResAbs > xResAbs && yResAbs > 25) {
-        direction = (yRes > 0) ? "Up" : "Down";
-    }
-    return direction;
+  if (xResAbs >= yResAbs && xResAbs > 25) {
+    direction = (xRes > 0) ? "Left" : "Right";
+  } else if (yResAbs > xResAbs && yResAbs > 25) {
+    direction = (yRes > 0) ? "Up" : "Down";
+  }
+  return direction;
 }
 
 /**
@@ -46,7 +46,7 @@ function getDirection(startX, startY, endX, endY) {
  */
 function random(min, max) {
   var range = 0;
-  if(arguments.length === 1) {
+  if (arguments.length === 1) {
     max = min;
     min = 0;
   }
@@ -55,59 +55,206 @@ function random(min, max) {
 }
 
 /**
+ * 根据坐标改变数据
+ */
+function change(data, i, j, value) {
+  value = isNaN(parseInt(value)) ? "0" : value;
+  data[i][j] = value;
+  return data;
+}
+
+/**
+ * 判断某个元素是否有值
+ */
+function isBlock(data, i, j) {
+  return data[i][j] !== "0";
+}
+
+/**
  * 根据滑动方向处理数据
  */
 function processData(data, direction) {
 
-  //  忽略的地址
-  var ignoreIndex = 3,
-      loopI, loopJ, prevItem,
-      i = 0, j = 0;
+  var ignoreIndex = 3,  //  忽略的地址
+    loopI,            //  外层数组   
+    loopJ,            //  当前循环项 
+    prevItem,         //  当前项的之前项
+    i = 0,            //  外层计数器 
+    j = 0,            //  内层计数器
+    k = 0,            //  滚动循环计数器
+    tmp;
 
-  if(data instanceof Array) {
+  if (data instanceof Array) {
+
+    //  判断滑动方向
     switch (direction) {
+
       case "Up":
+
+
         ignoreIndex = 0;
-        
-        for(; i < 3; i ++) {
-            loopI = data[i];
-            for(; j < 3; j ++) {
 
-                if(j !== ignoreIndex) {
+        for (i = 0; i < 4; i++) {
+          for (j = 0; j < 4; j++) {
+            if (i === ignoreIndex) {
 
-                    loopJ = loopI[j];
-                    prevItem = loopI[j - 1];
+            } else {
+              loopJ = data[i][j];
+              if (loopJ === "0") {
+                continue;
+              }
 
-                    if(prevItem !== "" && loopJ === prevItem) {
-                      loopI[j - 1] = "" + (parseInt(loopJ) + parseInt(loopI[j - 1]));
-                      loopI[j] = arr[random(23)];
+              // 上一行相同位置
+              prevItem = data[i - 1][j];
 
-                      console.log(loopI);
-
-                    }
+              if (prevItem === "0") {
+                for (k = i - 1; k >= 0; k--) {
+                  if (data[k][j] === "0") {
+                    data = change(data, k, j, loopJ);
+                    data = change(data, k + 1, j, "0");
+                  } else if (data[k][j] === "0") {
+                    data = change(data, k, j, loopJ * 2);
+                    data = change(data, k + 1, j, "0");
+                  }
                 }
+              } else if (loopJ === prevItem) {
+                loopI = loopJ * 2;
+                data = change(data, i, j, "0");
+                data = change(data, i - 1, j, loopI);
+              }
             }
+          }
         }
 
-        console.log(data);
         break;
 
       case "Down":
+
+
         ignoreIndex = 3;
+
+        for (i = 0; i < 4; i++) {
+          for (j = 3; j >= 0; j --) {
+            if (i === ignoreIndex) {
+
+            } else {
+              loopJ = data[i][j];
+
+              if (loopI === "0") {
+                continue;
+              }
+
+              prevItem = data[i + 1][j];
+
+              if (prevItem === "0") {
+                for (k = i + 1; k < 4; k++) {
+                  if (data[k][j] === "0") {
+                    data = change(data, k, j, loopJ);
+                    data = change(data, k - 1, j, "0");
+                  } else if (data[k][j] === loopJ) {
+                    data = change(data, k, j, loopJ * 2);
+                    data = change(data, k - 1, j, "0");
+                  }
+                }
+              } else if (loopJ === prevItem) {
+                loopI = loopJ * 2;
+                data = change(data, i, j, "0");
+                data = change(data, i - 1, j, loopI);
+              }
+            }
+          }
+        }
+
         break;
 
       case "Left":
+
         ignoreIndex = 0;
+
+        for (i = 0; i < 4; i++) {
+          for (j = 0; j < 4; j++) {
+
+            if (j === 0) {
+              continue;
+            } else {
+              loopJ = data[i][j];
+
+              if (loopJ === "0") {
+                continue;
+              }
+
+              prevItem = data[i][j - 1];
+
+              if (prevItem === "0") {
+                for (k = j - 1; k >= 0; k--) {
+                  tmp = data[i][k];
+
+                  if (tmp === "0") {
+                    data = change(data, i, k, loopJ);
+                    data = change(data, i, k + 1, "0");
+                  } else if (tmp === loopJ) {
+                    data = change(data, i, k, loopJ * 2);
+                    data = change(data, i, k + 1, "0");
+                  }
+                }
+              } else if (loopJ === prevItem) {
+                data = change(data, i, k, loopJ * 2);
+                data = change(data, i, k + 1, "0");
+              }
+
+            }
+
+          }
+        }
+
         break;
 
       case "Right":
+
+      console.log(data);
+
         ignoreIndex = 3;
+
+        for(i = 0; i < 4; i ++) {
+          for(j = 3; j >= 0; j --) {
+
+            if(j === ignoreIndex) {
+              
+            } else {
+              loopJ = data[i][j];
+              
+              if(loopJ === "0") {
+
+                for(k = i + 1; k < 4; k ++) {
+                  tmp = data[i][k];
+
+                  if(tmp === "0") {
+                    data = change(data, i , k, loopJ);
+                    data = change(data, i , k - 1, "0");
+                  } else if(tmp === loopJ) {
+                    data = change(data, i ,k , loopJ * 2);
+                    data = change(data, i ,k , "0");
+                  }
+
+                }
+
+              } else if (loopJ === prevItem) {
+                data = change(data, i , j, "0");
+                data = change(data, i , j + 1, loopJ * 2);
+              }
+
+            }
+
+          }
+        }
+
         break;
 
-      default:break;
+      default: break;
 
     }
   }
+
   return data;
 }
 

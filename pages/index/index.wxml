@@ -9,11 +9,13 @@
               background-size="cover"></image>
       <text class="userinfo-nickname">{{userInfo.nickName}}</text>
     </view>
-    <view class="game-area">
+    <view class="game-area" >
       <view wx:for="{{chessBoard}}" 
+            wx:key="{{index}}}"
             class="col-content">
         <lable class="item d{{item}}" 
-               wx:for="{{chessBoard[index]}}">
+               wx:for="{{chessBoard[index]}}"
+               wx:key="{{index}}">
             {{item > 0 ? item : ''}}
         </lable>
       </view>
